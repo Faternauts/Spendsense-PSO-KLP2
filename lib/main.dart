@@ -4,6 +4,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'presentation/pages/splash_screen.dart';
 import 'presentation/pages/home_page.dart'; // CORRECT import
 import 'presentation/pages/login_page.dart';
+import 'presentation/pages/export_report_page.dart';
 import 'utils/constants.dart';
 import 'data/services/local_storage_service.dart';
 import 'data/services/supabase_service.dart';
@@ -73,6 +74,9 @@ class MyApp extends StatelessWidget {
           routes: {
             '/home': (context) => const HomePage(),
             '/login': (context) => const LoginPage(),
+            '/export_report': (context) => ExportReportPage(
+              localStorage: LocalStorageService.instance,
+            ),
           },
         );
       },

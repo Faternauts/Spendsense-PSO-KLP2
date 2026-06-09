@@ -4,6 +4,7 @@ import '../../data/services/supabase_service.dart';
 import '../../data/services/theme_service.dart';
 import '../../utils/constants.dart';
 import '../../utils/formatters.dart';
+import '../widgets/export_report_button.dart';
 
 class SettingsPage extends StatefulWidget {
   final LocalStorageService localStorage;
@@ -180,6 +181,10 @@ class _SettingsPageState extends State<SettingsPage> {
               applicationLegalese: '© 2024 SpendSense',
               children: [const Text('Aplikasi manajer keuangan pribadi yang dibuat dengan Flutter.')],
             ),
+          ),
+          const SizedBox(height: 16),
+          ExportReportButton(
+            onPressed: () => Navigator.pushNamed(context, '/export_report'),
           ),
           const SizedBox(height: 16),
           const Divider(),
