@@ -3,6 +3,7 @@ import '../models/transaction_model.dart';
 import '../models/account_model.dart';
 import '../models/category_model.dart';
 import '../models/budget_model.dart';
+import '../models/goal_model.dart';
 
 class SupabaseService {
   static SupabaseService? _instance;
@@ -449,6 +450,158 @@ class SupabaseService {
   Future<void> deleteBudget(int budgetId) async {
     try {
       await _client.from('budgets').delete().eq('id', budgetId);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // ==================== FINANCIAL GOALS ====================
+  Future<void> saveGoal(Goal goal) async {
+    try {
+      if (user == null) throw Exception('User not authenticated');
+
+      // Validate input
+      if (goal.targetAmount <= 0) {
+        throw Exception('Target amount must be greater than 0');
+      }
+
+      final now = DateTime.now();
+      final deadline = DateTime(goal.deadline.year, goal.deadline.month, goal.deadline.day);
+      if (deadline.isBefore(now)) {
+        throw Exception('Deadline cannot be in the past');
+      }
+
+      await _client.from('financial_goals').insert({
+        'user_id': user!.id, // UUID from auth.users
+        'name': goal.name,
+        'target_amount': goal.targetAmount,
+        'saved_amount': goal.savedAmount,
+        'deadline': goal.deadline.toIso8601String(),
+        'icon': goal.icon,
+        'status': goal.status,
+        'created_at': DateTime.now().toIso8601String(),
+      });
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<List<Goal>> getGoals() async {
+    try {
+      if (user == null) return [];
+
+      final data = await _client
+          .from('financial_goals')
+          .select()
+          .eq('user_id', user!.id) // UUID from auth.users
+          .order('created_at', ascending: false);
+
+      final goals = (data as List).map((json) => Goal.fromJson(json)).toList();
+
+      // Auto-update statuses
+      final now = DateTime.now();
+      for (var goal in goals) {
+        bool needsUpdate = false;
+        String newStatus = goal.status;
+
+        if (goal.isCompleted() && goal.status != 'Completed') {
+          newStatus = 'Completed';
+          needsUpdate = true;
+        } else if (goal.isOverdue() && goal.status != 'Overdue') {
+          newStatus = 'Overdue';
+          needsUpdate = true;
+        }
+
+        if (needsUpdate && goal.id != null) {
+          await _updateGoalStatus(goal.id!, newStatus);
+        }
+      }
+
+      // Re-fetch after status updates
+      final updatedData = await _client
+          .from('financial_goals')
+          .select()
+          .eq('user_id', user!.id) // UUID from auth.users
+          .order('created_at', ascending: false);
+
+      return (updatedData as List).map((json) => Goal.fromJson(json)).toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> updateGoal(Goal goal) async {
+    try {
+      if (goal.id == null) {
+        throw Exception('Cannot update goal without ID');
+      }
+
+      // Validate input
+      if (goal.targetAmount <= 0) {
+        throw Exception('Target amount must be greater than 0');
+      }
+
+      final now = DateTime.now();
+      final deadline = DateTime(goal.deadline.year, goal.deadline.month, goal.deadline.day);
+      if (deadline.isBefore(now)) {
+        throw Exception('Deadline cannot be in the past');
+      }
+
+      // Determine status
+      String newStatus = goal.status;
+      if (goal.savedAmount >= goal.targetAmount) {
+        newStatus = 'Completed';
+      } else if (now.isAfter(goal.deadline)) {
+        newStatus = 'Overdue';
+      } else {
+        newStatus = 'Active';
+      }
+
+      await _client
+          .from('financial_goals')
+          .update({
+            'name': goal.name,
+            'target_amount': goal.targetAmount,
+            'saved_amount': goal.savedAmount,
+            'deadline': goal.deadline.toIso8601String(),
+            'icon': goal.icon,
+            'status': newStatus,
+          })
+          .eq('id', goal.id!);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> _updateGoalStatus(int goalId, String newStatus) async {
+    try {
+      await _client
+          .from('financial_goals')
+          .update({'status': newStatus})
+          .eq('id', goalId);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> deleteGoal(int goalId) async {
+    try {
+      await _client.from('financial_goals').delete().eq('id', goalId);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> updateGoalSavedAmount(int goalId, double newSavedAmount) async {
+    try {
+      if (newSavedAmount < 0) {
+        throw Exception('Saved amount cannot be negative');
+      }
+
+      await _client
+          .from('financial_goals')
+          .update({'saved_amount': newSavedAmount})
+          .eq('id', goalId);
     } catch (e) {
       rethrow;
     }
