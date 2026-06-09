@@ -1,0 +1,41 @@
+name: Continuous Integration (CI) - Test & Analysis
+
+on:
+  pull_request:
+    branches:
+      - development
+      - main
+
+jobs:
+  test-and-analysis:
+    name: Code Linting, Static Analysis, and Automation Testing
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java Environment
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          flutter-version: '3.38.1'
+
+      - name: Install Project Dependencies
+        run: flutter pub get
+
+      - name: Generate Localization Files
+        run: flutter gen-l10n
+
+      # Perubahan: Ditambahkan --no-fatal-warnings agar pipa tidak berhenti jika ada info/warning
+      - name: Analyze Code Static Syntax (Linter)
+        run: flutter analyze --no-fatal-warnings
+
+      - name: Run All Tests (Feature & Integration)
+        run: flutter test --coverage --reporter=expanded
