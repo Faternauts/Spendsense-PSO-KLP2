@@ -5,13 +5,10 @@ import '../services/local_storage_service.dart';
 
 class ReportRepository {
   final SupabaseService _supabaseService;
-  final LocalStorageService _localStorageService;
 
   ReportRepository({
     required SupabaseService supabaseService,
-    required LocalStorageService localStorageService,
-  })  : _supabaseService = supabaseService,
-        _localStorageService = localStorageService;
+  })  : _supabaseService = supabaseService;
 
   /// Get financial report data based on date range
   Future<FinancialReportData> getFinancialReport({

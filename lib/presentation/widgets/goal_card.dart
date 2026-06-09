@@ -249,7 +249,7 @@ class GoalCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       daysRemaining > 0
-                          ? '${daysRemaining} days'
+                          ? '$daysRemaining days'
                           : (goal.status == 'Completed' ? 'Completed' : 'Overdue'),
                       style: AppTextStyles.body.copyWith(
                         fontWeight: FontWeight.w600,
