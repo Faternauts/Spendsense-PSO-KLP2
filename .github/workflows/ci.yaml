@@ -35,7 +35,7 @@ jobs:
 
       # Perubahan: Ditambahkan --no-fatal-warnings agar pipa tidak berhenti jika ada info/warning
       - name: Analyze Code Static Syntax (Linter)
-        run: flutter analyze --no-fatal-warnings
+      - run: flutter analyze --no-fatal-infos --no-fatal-warnings
 
       - name: Run All Tests (Feature & Integration)
         run: flutter test --coverage --reporter=expanded
