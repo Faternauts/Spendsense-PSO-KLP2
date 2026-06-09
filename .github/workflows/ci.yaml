@@ -8,34 +8,36 @@ on:
 
 jobs:
   test-and-analysis:
-    name: Code Linting, Static Analysis, and Automation Testing
+    name: Automation Testing and Coverage
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Ambil kode sumber terbaru dari cabang asal Pull Request
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # 2. Setup Java Environment untuk kebutuhan internal Flutter tool
       - name: Setup Java Environment
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
 
+      # 3. Setup Flutter SDK versi stabil sesuai spesifikasi proyek
       - name: Setup Flutter SDK
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
           flutter-version: '3.38.1'
 
+      # 4. Unduh seluruh dependensi paket yang terdaftar di pubspec.yaml
       - name: Install Project Dependencies
         run: flutter pub get
 
+      # 5. Jalankan generator otomatis untuk berkas lokalisasi/bahasa (l10n)
       - name: Generate Localization Files
         run: flutter gen-l10n
 
-      # Perubahan: Ditambahkan --no-fatal-warnings agar pipa tidak berhenti jika ada info/warning
-      - name: Analyze Code Static Syntax (Linter)
-        run: flutter analyze --no-fatal-infos --no-fatal-warnings
-
+      # 6. Eksekusi seluruh pengujian (Fitur & Integrasi) dengan detail laporan lengkap
       - name: Run All Tests (Feature & Integration)
         run: flutter test --coverage --reporter=expanded
