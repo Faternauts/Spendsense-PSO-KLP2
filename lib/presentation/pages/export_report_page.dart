@@ -45,7 +45,6 @@ class _ExportReportPageState extends State<ExportReportPage> {
     super.initState();
     _reportRepository = ReportRepository(
       supabaseService: SupabaseService.instance,
-      localStorageService: widget.localStorage,
     );
     _exportService = ExportService.instance;
   }
@@ -584,6 +583,7 @@ class _ExportReportPageState extends State<ExportReportPage> {
         _isLoading = false;
       });
 
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Pratinjau dimuat')),
       );
@@ -641,6 +641,7 @@ class _ExportReportPageState extends State<ExportReportPage> {
         // Web: Trigger browser download
         _triggerWebDownload(reportBytes, fileName);
         setState(() => _isLoading = false);
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('PDF berhasil diunduh!'),
@@ -666,6 +667,7 @@ class _ExportReportPageState extends State<ExportReportPage> {
           text: 'Laporan Keuangan SpendSense',
         );
 
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
