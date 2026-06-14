@@ -34,7 +34,7 @@ jobs:
         run: flutter gen-l10n
 
       - name: Analyze Code Static Syntax (Linter)
-        run: flutter analyze --no-fatal-warnings
+        run: flutter analyze
 
       - name: Run All Tests (Feature & Integration)
         run: flutter test --coverage --reporter=expanded
