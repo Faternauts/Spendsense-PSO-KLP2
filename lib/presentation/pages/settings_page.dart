@@ -33,9 +33,10 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _logout() async {
     await SupabaseService.instance.signOut();
-    if (mounted) {
-      Navigator.of(context).pushReplacementNamed('/login');
-    }
+    
+    // PERUBAHAN 1: Tambahkan pengaman sebelum Navigator pushReplacementNamed
+    if (!mounted) return;
+    Navigator.of(context).pushReplacementNamed('/login');
   }
 
   void _showClearDataDialog() {
@@ -49,13 +50,13 @@ class _SettingsPageState extends State<SettingsPage> {
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AppColors.expense),
             onPressed: () async {
+              final navigator = Navigator.of(context);
+              final scaffoldMessenger = ScaffoldMessenger.of(context);
               await widget.localStorage.clearAllData();
-              Navigator.pop(context);
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Semua data lokal telah dihapus.')),
-                );
-              }
+              navigator.pop();
+              scaffoldMessenger.showSnackBar(
+                const SnackBar(content: Text('Semua data lokal telah dihapus.')),
+              );
             },
             child: const Text('Hapus'),
           ),
