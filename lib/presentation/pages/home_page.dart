@@ -18,6 +18,7 @@ import 'transactions_page.dart';
 import 'accounts_page.dart';
 import 'statistics_page.dart';
 import 'settings_page.dart';
+import 'goals_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -275,10 +276,11 @@ class _HomePageState extends State<HomePage> {
             localStorage: _localStorage,
           ),
           SettingsPage(localStorage: _localStorage),
+          const GoalsPage(),                
         ],
       ),
       floatingActionButton:
-          _currentIndex !=
+          _currentIndex <
               4 // Show FAB on all tabs except Profile/Settings
           ? FloatingActionButton(
               onPressed: _onFabPressed,
@@ -327,6 +329,10 @@ class _HomePageState extends State<HomePage> {
             BottomNavigationBarItem(
               icon: Icon(Icons.person_outline),
               label: 'Profile',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.flag_rounded), 
+              label: 'Goals', 
             ),
           ],
         ),
