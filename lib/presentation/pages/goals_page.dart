@@ -125,7 +125,7 @@ class _GoalsPageState extends State<GoalsPage> {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          'Farrel cinta mati ama auliya malika idi',
+          'Goals',
           style: TextStyle(
             color: textColor,
             fontSize: 20,
