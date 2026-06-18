@@ -53,7 +53,7 @@ class _ExportReportPageState extends State<ExportReportPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Export Laporan Keuangan'),
+        title: const Text('Export Financial Report'),
         elevation: 0,
       ),
       body: SingleChildScrollView(
