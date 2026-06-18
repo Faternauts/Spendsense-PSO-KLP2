@@ -1,0 +1,73 @@
+name: CD - Flutter Web Deploy
+
+on:
+  push:
+    branches:
+      - development
+      - main
+
+env:
+  IMAGE_NAME: spendsense-web
+
+jobs:
+  # Stage 1: Build Docker & Push ke ACR
+  build-and-push:
+    name: Build & Push to ACR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Log in to Azure Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Set Environment Mode
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "ENV_MODE=production" >> $GITHUB_ENV
+          else
+            echo "ENV_MODE=staging" >> $GITHUB_ENV
+          fi
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ env.ENV_MODE }}-latest
+
+  # Stage 2: Deploy ke Azure Web App
+  deploy:
+    name: CD Deployment
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set Target Environment
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "APP_NAME=spendsense" >> $GITHUB_ENV
+            echo "DOCKER_TAG=production-latest" >> $GITHUB_ENV
+          else
+            echo "APP_NAME=spendsense-staging" >> $GITHUB_ENV
+            echo "DOCKER_TAG=staging-latest" >> $GITHUB_ENV
+          fi
+
+      - name: Deploy to Azure Web App (Staging)
+        if: github.ref != 'refs/heads/main'
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.APP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_STAGING }}
+          images: "${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ env.DOCKER_TAG }}"
+
+      - name: Deploy to Azure Web App (Production)
+        if: github.ref == 'refs/heads/main'
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.APP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_PRODUCTION }}
+          images: "${{ secrets.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ env.DOCKER_TAG }}"
