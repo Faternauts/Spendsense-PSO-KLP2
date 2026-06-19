@@ -125,7 +125,7 @@ class _GoalsPageState extends State<GoalsPage> {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          'Goals',
+          'Financial Goals',
           style: TextStyle(
             color: textColor,
             fontSize: 20,
